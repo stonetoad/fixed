@@ -65,8 +65,8 @@ instance Bounded Fixed where
   maxBound = Fixed maxBound
 
 instance Fractional Fixed where
-  Fixed a / Fixed b  = Fixed $ fromIntegral (unsafeShiftL (fromIntegral a) 16 `div` fromIntegral b :: Int64)
-  fromRational a = Fixed $ fromInteger (unsafeShiftL (numerator a) 16 `div` denominator a)
+  Fixed a / Fixed b  = Fixed $ fromIntegral (unsafeShiftL (fromIntegral a) 16 `quot` fromIntegral b :: Int64)
+  fromRational a = Fixed $ fromInteger (unsafeShiftL (numerator a) 16 `quot` denominator a)
 
 instance Real Fixed where
   toRational (Fixed i) = toInteger i % 65536
@@ -78,7 +78,7 @@ instance RealFrac Fixed where
   truncate (Fixed a)
     | a >= 0 = fromIntegral (unsafeShiftR a 16)
     | otherwise = negate $ fromIntegral $ unsafeShiftR (negate a) 16
-  round (Fixed f)   = fromIntegral $ unsafeShiftR (f + 0x8000) 16
+  round (Fixed f)   = fromIntegral $ unsafeShiftR (f + 0x7fff + (unsafeShiftR f 16 .&. 0x0001)) 16
   ceiling (Fixed f) = fromIntegral $ unsafeShiftR (f + 0xffff) 16
   floor (Fixed f)   = fromIntegral $ unsafeShiftR f 16
 
