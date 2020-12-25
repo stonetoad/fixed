@@ -78,8 +78,12 @@ instance RealFrac Fixed where
   truncate (Fixed a)
     | a >= 0 = fromIntegral (unsafeShiftR a 16)
     | otherwise = negate $ fromIntegral $ unsafeShiftR (negate a) 16
-  round (Fixed f)   = fromIntegral $ unsafeShiftR (f + 0x7fff + (unsafeShiftR f 16 .&. 0x0001)) 16
-  ceiling (Fixed f) = fromIntegral $ unsafeShiftR (f + 0xffff) 16
+  round (Fixed f)
+    | f >= 0x7FFF0000 = fromIntegral 0x7FFF -- avoid overflow
+    | otherwise = fromIntegral $ unsafeShiftR (f + 0x7fff + (unsafeShiftR f 16 .&. 0x0001)) 16
+  ceiling (Fixed f)
+    | f >= 0x7FFF0000 = fromIntegral 0x7FFF -- avoid overflow
+    | otherwise = fromIntegral $ unsafeShiftR (f + 0xffff) 16
   floor (Fixed f)   = fromIntegral $ unsafeShiftR f 16
 
 instance Floating Fixed where
